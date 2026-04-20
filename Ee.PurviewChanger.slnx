@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Ee.PurviewChanger.Core.Tests/Ee.PurviewChanger.Core.Tests.csproj" />
+  <Project Path="Ee.PurviewChanger.Core/Ee.PurviewChanger.Core.csproj" />
+  <Project Path="Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj" />
+</Solution>
