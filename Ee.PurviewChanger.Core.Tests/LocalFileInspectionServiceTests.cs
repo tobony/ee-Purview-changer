@@ -14,7 +14,7 @@ public sealed class LocalFileInspectionServiceTests
         var options = new PurviewAppOptions();
         var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.docx");
 
-        var result = _service.Inspect(filePath, options);
+        var result = _service.Inspect(filePath, options, "ValidationModeUser");
 
         Assert.IsFalse(result.FileExists);
         Assert.IsFalse(result.CanPreviewChange);
@@ -30,12 +30,13 @@ public sealed class LocalFileInspectionServiceTests
 
         try
         {
-            var result = _service.Inspect(filePath, options);
+            var result = _service.Inspect(filePath, options, "ValidationModeUser");
 
             Assert.IsTrue(result.FileExists);
             Assert.IsTrue(result.IsSupportedFileType);
             Assert.IsTrue(result.CurrentLabelKnown);
             Assert.AreEqual(options.ValidationMode.SimulatedCurrentLabel, result.CurrentLabel);
+            Assert.AreEqual("Validation mode", result.ExecutionMode);
         }
         finally
         {

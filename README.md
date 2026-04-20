@@ -2,13 +2,15 @@
 
 Windows 11용 Microsoft Purview 라벨 변경 MVP 저장소입니다.
 
-현재 구현은 **단건/검증 가능한 변경 흐름**에 집중한 초기 버전입니다.
+현재 구현은 **단건/검증 가능한 변경 흐름 + 실서비스용 로컬 라벨링 서비스 경계**에 집중한 초기 버전입니다.
 
 ## 현재 포함된 범위
 
 - WPF 기반 Windows 11 데스크탑 앱 골격
 - Microsoft 365 SSO/WAM 연동을 위한 MSAL 인증 스캐폴딩
 - 파일 1건 선택 → 현재 상태 확인 → 대상 라벨 선택 → 변경 미리보기 → 감사 로그 기록 흐름
+- Validation mode / Live mode 공용 UI 흐름과 로컬 파일 라벨링 서비스 경계
+- Live mode용 MIP SDK 연동 지점 및 개발용 메타데이터 폴백
 - Purview 기능별 REST API / SDK 지원 현황 표시
 - 검증 모드(Validation mode) 기본 활성화
 
@@ -16,8 +18,8 @@ Windows 11용 Microsoft Purview 라벨 변경 MVP 저장소입니다.
 
 | 기능 | 우선 연동 방식 | 상태 | 비고 |
 | --- | --- | --- | --- |
-| 로컬 파일 현재 라벨 조회 | Microsoft Information Protection SDK | Planned | 정확한 조회는 SDK 연동 필요 |
-| 로컬 파일 라벨 변경 | Microsoft Information Protection SDK | Planned | 실제 적용은 SDK 연동 후 활성화 |
+| 로컬 파일 현재 라벨 조회 | Microsoft Information Protection SDK | Preview | 서비스 경계 추가. 개발용 메타데이터 폴백으로 흐름 검증 가능 |
+| 로컬 파일 라벨 변경 | Microsoft Information Protection SDK | Preview | 적용/재조회/감사 로그까지 연결. 실제 SDK 바인딩은 후속 작업 |
 | Microsoft 365 클라우드 파일 라벨 조회/적용 | Microsoft Graph / Purview REST API | Planned | 클라우드 시나리오용 후속 범위 |
 | 검증 모드 단건 흐름 | 로컬 검증 모드 | Supported | UI/확인/감사 로그 검증 가능 |
 | 대량 변경 | 미지원 | Not supported | MVP 범위 제외 |
@@ -34,6 +36,21 @@ Windows 11용 Microsoft Purview 라벨 변경 MVP 저장소입니다.
 
 즉, **운영 전 검증 가능한 단건 작업 흐름**을 먼저 점검할 수 있습니다.
 
+## Live mode와 MIP SDK 연동 지점
+
+`validationMode.enabled=false` 로 전환하면 Live mode 흐름이 활성화됩니다.
+
+현재 Live mode 구현은 두 레이어로 나뉩니다.
+
+- 공용 서비스 경계: 현재 상태 조회 / 라벨 변경 / 적용 후 재조회 / 감사 로그
+- MIP SDK 연동 지점: `IMipSdkFileLabelClient`
+
+기본 제공 구현은 실제 SDK 대신 `mipSdk.developmentFallbackEnabled=true` 일 때
+`App_Data/MipSdkMetadata` 에 개발용 메타데이터를 저장하여 Live mode UI/흐름을 검증합니다.
+
+즉, 현재 저장소는 **실제 SDK 연결을 수용하는 구조**와 **개발용 폴백 구현**을 함께 제공합니다.
+실제 Microsoft Information Protection SDK 바인딩은 이 인터페이스를 대체하는 방식으로 이어서 구현하면 됩니다.
+
 ## Microsoft 365 인증 설정
 
 `Ee.PurviewChanger.Desktop/appsettings.json`에서 아래 값을 설정하세요.
@@ -44,6 +61,15 @@ Windows 11용 Microsoft Purview 라벨 변경 MVP 저장소입니다.
 - `authentication.scopes`: 초기 로그인용 위임 권한 목록
 
 현재 기본 스코프는 `User.Read`이며, 실제 Purview/Graph 호출 구현 시 필요한 권한을 추가해야 합니다.
+
+Live mode 설정:
+
+- `mipSdk.enabled`: Live mode 활성화 여부
+- `mipSdk.applicationId`: 실제 SDK 전환 시 사용할 애플리케이션 식별자
+- `mipSdk.nativeLibraryPath`: 실제 SDK 네이티브 라이브러리 경로 예약 값
+- `mipSdk.developmentFallbackEnabled`: 개발용 폴백 사용 여부
+- `mipSdk.developmentMetadataDirectory`: 개발용 라벨 메타데이터 저장소 경로
+- `mipSdk.developmentDefaultLabel`: 저장 이력이 없을 때 초기 라벨로 간주할 값
 
 ## 빌드
 
@@ -61,7 +87,7 @@ dotnet test /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewCh
 
 ## 다음 구현 단계
 
-1. MIP SDK 연동으로 로컬 파일 현재 라벨 조회/변경 활성화
+1. `IMipSdkFileLabelClient`에 실제 Microsoft Information Protection SDK 바인딩 추가
 2. Graph/Purview REST API 기반 클라우드 파일 라벨 조회/변경 추가
-3. 실제 결과 재조회와 예외 처리 강화
+3. 실제 권한/인증 오류 분류와 재시도 정책 강화
 4. 운영 배포/서명/설치 패키지 정리

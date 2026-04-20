@@ -7,4 +7,7 @@ public sealed record AuditLogEntry(
     string TargetLabel,
     string ExecutionMode,
     string Result,
-    string Actor);
+    string Actor,
+    bool AppliedToSourceFile,
+    string? RecheckedLabel,
+    string? Details);

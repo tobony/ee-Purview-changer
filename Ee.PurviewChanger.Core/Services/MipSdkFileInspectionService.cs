@@ -2,13 +2,14 @@ using Ee.PurviewChanger.Core.Models;
 
 namespace Ee.PurviewChanger.Core.Services;
 
-public sealed class LocalFileInspectionService
+public sealed class MipSdkFileInspectionService(IMipSdkFileLabelClient client)
     : IFileInspectionService
 {
     public FileInspectionResult Inspect(string filePath, PurviewAppOptions options, string actor)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
 
         var normalizedPath = Path.GetFullPath(filePath.Trim());
         var fileExists = File.Exists(normalizedPath);
@@ -30,8 +31,8 @@ public sealed class LocalFileInspectionService
                 "Unknown",
                 false,
                 false,
-                "Validation mode",
-                "Validation mode",
+                "Live mode",
+                "Microsoft Information Protection SDK",
                 "파일을 찾을 수 없습니다.",
                 "경로를 다시 확인하세요.",
                 null,
@@ -51,51 +52,31 @@ public sealed class LocalFileInspectionService
                 "Unknown",
                 false,
                 false,
-                "Validation mode",
-                "Validation mode",
+                "Live mode",
+                "Microsoft Information Protection SDK",
                 "지원되지 않는 파일 형식입니다.",
                 $"지원 형식: {string.Join(", ", options.SupportedFileExtensions)}",
                 null,
                 messages);
         }
 
-        if (options.ValidationMode.Enabled)
-        {
-            messages.Add("검증 모드에서 시뮬레이션된 현재 라벨을 사용합니다.");
-
-            return new FileInspectionResult(
-                normalizedPath,
-                true,
-                extension,
-                true,
-                true,
-                options.ValidationMode.SimulatedCurrentLabel,
-                true,
-                false,
-                "Validation mode",
-                "Validation mode",
-                $"현재 라벨(검증 모드): {options.ValidationMode.SimulatedCurrentLabel}",
-                "실서비스 연결 전 UI/흐름 검증을 위한 모드입니다.",
-                "실제 Purview 라벨 변경은 수행하지 않습니다.",
-                messages);
-        }
-
-        messages.Add("실서비스 모드에서는 Microsoft Information Protection SDK가 필요합니다.");
+        var state = client.Inspect(normalizedPath, options, actor);
+        messages.AddRange(state.Messages);
 
         return new FileInspectionResult(
             normalizedPath,
             true,
             extension,
             true,
-            false,
-            "Unknown",
-            false,
-            true,
+            state.CurrentLabelKnown,
+            state.CurrentLabel,
+            state.CanInspect && state.CanApply && state.CurrentLabelKnown,
+            !state.CanApply,
             "Live mode",
-            "Microsoft Information Protection SDK",
-            "현재 라벨을 아직 조회할 수 없습니다.",
-            "실제 라벨 조회/변경은 Windows에서 MIP SDK 연동 후 활성화됩니다.",
-            "현재 구현에서는 Validation mode가 기본입니다.",
+            state.ProviderName,
+            state.Summary,
+            state.CapabilitySummary,
+            state.TechnicalDetails,
             messages);
     }
 }

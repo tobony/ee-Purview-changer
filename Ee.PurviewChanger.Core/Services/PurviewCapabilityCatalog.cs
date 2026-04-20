@@ -9,13 +9,13 @@ public static class PurviewCapabilityCatalog
         new(
             "로컬 파일 현재 라벨 조회",
             "Microsoft Information Protection SDK",
-            SupportLevel.Planned,
-            "정확한 현재 상태 조회와 변경에는 MIP SDK 연동이 필요합니다."),
+            SupportLevel.Preview,
+            "실서비스용 조회/변경 서비스 경계를 도입했고, 개발용 메타데이터 폴백으로 흐름을 검증할 수 있습니다."),
         new(
             "로컬 파일 라벨 변경",
             "Microsoft Information Protection SDK",
-            SupportLevel.Planned,
-            "단건 변경 우선. 실제 라벨 적용은 Windows 데스크탑에서 SDK로 연결해야 합니다."),
+            SupportLevel.Preview,
+            "단건 변경 우선. 실제 SDK 전환 전에는 개발용 메타데이터 저장소를 통해 적용/재조회를 검증합니다."),
         new(
             "Microsoft 365 클라우드 파일 라벨 목록 조회",
             "Microsoft Graph / Purview REST API",

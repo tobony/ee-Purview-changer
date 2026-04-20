@@ -6,6 +6,8 @@ public sealed class PurviewAppOptions
 
     public ValidationModeOptions ValidationMode { get; set; } = new();
 
+    public MipSdkOptions MipSdk { get; set; } = new();
+
     public List<string> SupportedFileExtensions { get; set; } = [".docx", ".xlsx", ".pptx", ".pdf", ".txt"];
 
     public List<LabelDefinition> CandidateLabels { get; set; } =

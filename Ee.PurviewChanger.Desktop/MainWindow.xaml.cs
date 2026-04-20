@@ -12,9 +12,9 @@ namespace Ee.PurviewChanger.Desktop;
 public partial class MainWindow : Window
 {
     private readonly PurviewAppOptions _options;
-    private readonly LocalFileInspectionService _inspectionService = new();
+    private readonly IFileInspectionService _inspectionService;
     private readonly LabelChangePlanner _changePlanner = new();
-    private readonly ValidationModeChangeService _changeService = new(new AuditLogService());
+    private readonly ILabelChangeService _changeService;
     private readonly Microsoft365AuthenticationService _authenticationService;
     private FileInspectionResult? _lastInspection;
     private LabelChangePreview? _lastPreview;
@@ -25,6 +25,19 @@ public partial class MainWindow : Window
 
         _options = AppOptionsLoader.Load();
         _authenticationService = new Microsoft365AuthenticationService(_options.Authentication);
+        var auditLogService = new AuditLogService();
+
+        if (_options.ValidationMode.Enabled)
+        {
+            _inspectionService = new LocalFileInspectionService();
+            _changeService = new ValidationModeChangeService(auditLogService);
+        }
+        else
+        {
+            var mipClient = new DevelopmentMipSdkFileLabelClient();
+            _inspectionService = new MipSdkFileInspectionService(mipClient);
+            _changeService = new MipSdkLabelChangeService(mipClient, auditLogService);
+        }
 
         TargetLabelComboBox.ItemsSource = _options.CandidateLabels;
         CapabilitiesDataGrid.ItemsSource = PurviewCapabilityCatalog.CreateDefault();
@@ -57,12 +70,12 @@ public partial class MainWindow : Window
     {
         try
         {
-            _lastInspection = _inspectionService.Inspect(FilePathTextBox.Text, _options);
+            _lastInspection = _inspectionService.Inspect(FilePathTextBox.Text, _options, _authenticationService.CurrentActor);
             _lastPreview = null;
 
             InspectionSummaryTextBlock.Text = _lastInspection.CurrentStateSummary;
-            CapabilitySummaryTextBlock.Text = _lastInspection.CapabilitySummary;
-            InspectionMessagesItemsControl.ItemsSource = _lastInspection.Messages;
+            CapabilitySummaryTextBlock.Text = $"{_lastInspection.ProviderName} · {_lastInspection.CapabilitySummary}";
+            InspectionMessagesItemsControl.ItemsSource = BuildInspectionMessages(_lastInspection);
             PreviewSummaryTextBlock.Text = "현재 상태 확인 후 대상 라벨을 선택해 미리보기를 실행하세요.";
             ApplyButton.IsEnabled = false;
         }
@@ -114,10 +127,10 @@ public partial class MainWindow : Window
         {
             var result = await _changeService.ApplyAsync(
                 _lastPreview,
-                _options.AuditLogDirectory,
+                _options,
                 _authenticationService.CurrentActor);
 
-            PreviewSummaryTextBlock.Text = result.Message;
+            PreviewSummaryTextBlock.Text = BuildApplySummary(result);
             UpdateAuditLogText(result.AuditLogPath);
         }
         catch (Exception exception)
@@ -167,7 +180,7 @@ public partial class MainWindow : Window
     private void RefreshAuthenticationState(AuthenticationSession session)
     {
         AuthenticationStatusTextBlock.Text = session.StatusMessage;
-        AuthenticationHintTextBlock.Text = session.Hint;
+        AuthenticationHintTextBlock.Text = session.Hint + Environment.NewLine + GetExecutionModeHint();
         SignOutButton.IsEnabled = session.IsSignedIn;
     }
 
@@ -186,6 +199,40 @@ public partial class MainWindow : Window
             ? $"감사 로그 경로: {Path.GetFullPath(_options.AuditLogDirectory)}"
             : $"최근 감사 로그: {auditLogPath}";
     }
+
+    private string BuildApplySummary(LabelChangeResult result)
+    {
+        var lines = new List<string> { result.Message };
+
+        if (!string.IsNullOrWhiteSpace(result.RecheckedLabel))
+        {
+            lines.Add($"적용 후 확인 라벨: {result.RecheckedLabel}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.TechnicalDetails))
+        {
+            lines.Add(result.TechnicalDetails);
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
+    private IReadOnlyList<string> BuildInspectionMessages(FileInspectionResult inspection)
+    {
+        var messages = inspection.Messages.ToList();
+
+        if (!string.IsNullOrWhiteSpace(inspection.TechnicalDetails))
+        {
+            messages.Add(inspection.TechnicalDetails);
+        }
+
+        return messages;
+    }
+
+    private string GetExecutionModeHint() =>
+        _options.ValidationMode.Enabled
+            ? "현재는 Validation mode입니다. 실제 파일 라벨은 변경되지 않고 감사 로그만 남깁니다."
+            : "현재는 Live mode입니다. MIP SDK 설정 또는 개발용 폴백 설정을 확인하세요.";
 
     private static string BuildFileFilter(IEnumerable<string> extensions)
     {
