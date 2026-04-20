@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Ee.PurviewChanger.Core.Models;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
@@ -30,7 +29,7 @@ public sealed class Microsoft365AuthenticationService
         try
         {
             var application = GetClientApplication();
-            var scopes = _options.Scopes.Count > 0 ? _options.Scopes : ["User.Read"];
+            var scopes = _options.Scopes.Count > 0 ? _options.Scopes : [AuthenticationOptions.DefaultGraphScope];
             var accounts = await application.GetAccountsAsync();
             AuthenticationResult result;
 

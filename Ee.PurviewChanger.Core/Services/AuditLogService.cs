@@ -18,8 +18,8 @@ public sealed class AuditLogService
         var targetDirectory = Path.GetFullPath(auditLogDirectory);
         Directory.CreateDirectory(targetDirectory);
 
-        var safeTimestamp = entry.Timestamp.ToString("yyyyMMdd-HHmmss");
-        var targetPath = Path.Combine(targetDirectory, $"label-change-{safeTimestamp}.json");
+        var safeTimestamp = entry.Timestamp.ToString("yyyyMMdd-HHmmss-fff");
+        var targetPath = Path.Combine(targetDirectory, $"label-change-{safeTimestamp}-{Guid.NewGuid():N}.json");
 
         await using var stream = File.Create(targetPath);
         await JsonSerializer.SerializeAsync(stream, entry, JsonSerializerOptions, cancellationToken);
