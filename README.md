@@ -11,6 +11,7 @@ Windows 11용 Microsoft Purview 라벨 변경 MVP 저장소입니다.
 - 파일 1건 선택 → 현재 상태 확인 → 대상 라벨 선택 → 변경 미리보기 → 감사 로그 기록 흐름
 - Validation mode / Live mode 공용 UI 흐름과 로컬 파일 라벨링 서비스 경계
 - Live mode용 MIP SDK 연동 지점 및 개발용 메타데이터 폴백
+- Live mode 차단 상태 분류(비활성화/설정 누락/런타임 미준비/재조회 실패)
 - Purview 기능별 REST API / SDK 지원 현황 표시
 - 검증 모드(Validation mode) 기본 활성화
 
@@ -70,6 +71,14 @@ Live mode 설정:
 - `mipSdk.developmentFallbackEnabled`: 개발용 폴백 사용 여부
 - `mipSdk.developmentMetadataDirectory`: 개발용 라벨 메타데이터 저장소 경로
 - `mipSdk.developmentDefaultLabel`: 저장 이력이 없을 때 초기 라벨로 간주할 값
+
+Live mode 차단/실패 처리:
+
+- `mipSdk.enabled=false` 이면 현재 상태 확인 단계에서 Live mode 비활성화 상태로 차단됩니다.
+- `developmentFallbackEnabled=false` 인 경우 `applicationId`, `nativeLibraryPath`, Windows 실행 환경을 점검해
+  설정 누락과 실행 환경 미준비를 구분해 보여줍니다.
+- 동일 라벨 재적용은 적용 전에 차단되며, 우회 호출이 들어와도 서비스가 다시 막습니다.
+- 적용 후 재조회가 실패하거나 결과가 다르면 실패 상태와 감사 로그를 함께 남깁니다.
 
 ## 빌드
 

@@ -71,7 +71,7 @@ public partial class MainWindow : Window
             _lastInspection = _inspectionService.Inspect(FilePathTextBox.Text, _options, _authenticationService.CurrentActor);
             _lastPreview = null;
 
-            InspectionSummaryTextBlock.Text = _lastInspection.CurrentStateSummary;
+            InspectionSummaryTextBlock.Text = $"{ResolveInspectionStatusText(_lastInspection.Status)} · {_lastInspection.CurrentStateSummary}";
             CapabilitySummaryTextBlock.Text = $"{_lastInspection.ProviderName} · {_lastInspection.CapabilitySummary}";
             InspectionMessagesItemsControl.ItemsSource = BuildInspectionMessages(_lastInspection);
             PreviewSummaryTextBlock.Text = "현재 상태 확인 후 대상 라벨을 선택해 미리보기를 실행하세요.";
@@ -203,6 +203,7 @@ public partial class MainWindow : Window
     private string BuildApplySummary(LabelChangeResult result)
     {
         var lines = new List<string> { result.Message };
+        lines.Insert(0, $"결과 상태: {ResolveLabelChangeStatusText(result.Status)}");
 
         if (!string.IsNullOrWhiteSpace(result.RecheckedLabel))
         {
@@ -228,6 +229,33 @@ public partial class MainWindow : Window
 
         return messages;
     }
+
+    private static string ResolveInspectionStatusText(FileInspectionStatus status) =>
+        status switch
+        {
+            FileInspectionStatus.Ready => "조회 가능",
+            FileInspectionStatus.ValidationModeSimulated => "검증 모드",
+            FileInspectionStatus.FileNotFound => "파일 없음",
+            FileInspectionStatus.UnsupportedFileType => "미지원 형식",
+            FileInspectionStatus.MipSdkDisabled => "Live mode 비활성화",
+            FileInspectionStatus.MipSdkConfigurationIncomplete => "설정 보완 필요",
+            FileInspectionStatus.MipSdkUnavailable => "실행 환경 미준비",
+            FileInspectionStatus.InspectionFailed => "조회 실패",
+            _ => status.ToString()
+        };
+
+    private static string ResolveLabelChangeStatusText(LabelChangeStatus status) =>
+        status switch
+        {
+            LabelChangeStatus.Simulated => "검증 모드 기록",
+            LabelChangeStatus.Applied => "적용 완료",
+            LabelChangeStatus.Blocked => "적용 차단",
+            LabelChangeStatus.SameLabel => "동일 라벨",
+            LabelChangeStatus.MipSdkUnavailable => "실행 환경 미준비",
+            LabelChangeStatus.WriteFailed => "적용 실패",
+            LabelChangeStatus.RecheckFailed => "재조회 실패",
+            _ => status.ToString()
+        };
 
     private string GetExecutionModeHint() =>
         _options.ValidationMode.Enabled

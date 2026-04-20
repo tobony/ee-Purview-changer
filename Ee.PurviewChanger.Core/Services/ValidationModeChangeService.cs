@@ -23,7 +23,7 @@ public sealed class ValidationModeChangeService
 
         if (!preview.CanApply)
         {
-            return new LabelChangeResult(false, preview.BlockReason ?? "적용 가능한 상태가 아닙니다.", null, false, null, null);
+            return new LabelChangeResult(false, LabelChangeStatus.Blocked, preview.BlockReason ?? "적용 가능한 상태가 아닙니다.", null, false, null, null);
         }
 
         var entry = new AuditLogEntry(
@@ -42,6 +42,7 @@ public sealed class ValidationModeChangeService
 
         return new LabelChangeResult(
             true,
+            LabelChangeStatus.Simulated,
             $"검증 모드에서 변경 요청을 기록했습니다. 로그: {auditLogPath}",
             auditLogPath,
             false,

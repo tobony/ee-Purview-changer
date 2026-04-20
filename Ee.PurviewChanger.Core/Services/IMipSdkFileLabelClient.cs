@@ -16,6 +16,7 @@ public interface IMipSdkFileLabelClient
 }
 
 public sealed record MipSdkFileLabelState(
+    FileInspectionStatus Status,
     bool CanInspect,
     bool CanApply,
     bool CurrentLabelKnown,
@@ -28,6 +29,7 @@ public sealed record MipSdkFileLabelState(
 
 public sealed record MipSdkLabelChangeOutcome(
     bool Success,
+    LabelChangeStatus Status,
     bool AppliedToSourceFile,
     string ProviderName,
     string Message,

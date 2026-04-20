@@ -18,6 +18,7 @@ public sealed class LocalFileInspectionServiceTests
 
         Assert.IsFalse(result.FileExists);
         Assert.IsFalse(result.CanPreviewChange);
+        Assert.AreEqual(FileInspectionStatus.FileNotFound, result.Status);
         Assert.AreEqual("파일을 찾을 수 없습니다.", result.CurrentStateSummary);
     }
 
@@ -37,6 +38,7 @@ public sealed class LocalFileInspectionServiceTests
             Assert.IsTrue(result.CurrentLabelKnown);
             Assert.AreEqual(options.ValidationMode.SimulatedCurrentLabel, result.CurrentLabel);
             Assert.AreEqual("Validation mode", result.ExecutionMode);
+            Assert.AreEqual(FileInspectionStatus.ValidationModeSimulated, result.Status);
         }
         finally
         {

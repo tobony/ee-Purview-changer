@@ -19,7 +19,7 @@ public sealed class MipSdkLabelChangeService(
 
         if (!preview.CanApply)
         {
-            return new LabelChangeResult(false, preview.BlockReason ?? "적용 가능한 상태가 아닙니다.", null, false, null, null);
+            return new LabelChangeResult(false, LabelChangeStatus.Blocked, preview.BlockReason ?? "적용 가능한 상태가 아닙니다.", null, false, null, null);
         }
 
         var outcome = await client.ApplyAsync(
@@ -46,6 +46,7 @@ public sealed class MipSdkLabelChangeService(
 
         return new LabelChangeResult(
             outcome.Success,
+            outcome.Status,
             outcome.Success
                 ? $"{outcome.Message} 로그: {auditLogPath}"
                 : $"{outcome.Message} 실패 로그: {auditLogPath}",
