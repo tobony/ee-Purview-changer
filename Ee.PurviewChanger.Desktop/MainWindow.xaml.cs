@@ -42,9 +42,7 @@ public partial class MainWindow : Window
         TargetLabelComboBox.ItemsSource = _options.CandidateLabels;
         CapabilitiesDataGrid.ItemsSource = PurviewCapabilityCatalog.CreateDefault();
 
-        ExecutionModeTextBlock.Text = _options.ValidationMode.Enabled
-            ? "실행 모드: Validation mode (기본)"
-            : "실행 모드: Live mode";
+        ExecutionModeTextBlock.Text = GetExecutionModeBanner();
         FilePathTextBox.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
         RefreshAuthenticationState(AuthenticationSession.NotConfigured(_options.Authentication));
@@ -233,6 +231,26 @@ public partial class MainWindow : Window
         _options.ValidationMode.Enabled
             ? "현재는 Validation mode입니다. 실제 파일 라벨은 변경되지 않고 감사 로그만 남깁니다."
             : "현재는 Live mode입니다. MIP SDK 설정 또는 개발용 폴백 설정을 확인하세요.";
+
+    private string GetExecutionModeBanner()
+    {
+        if (_options.ValidationMode.Enabled)
+        {
+            return "실행 모드: Validation mode (기본)";
+        }
+
+        if (!_options.MipSdk.Enabled)
+        {
+            return "실행 모드: Live mode (mipSdk.enabled 확인 필요)";
+        }
+
+        if (!_options.MipSdk.DevelopmentFallbackEnabled)
+        {
+            return "실행 모드: Live mode (실제 MIP SDK 연결 필요)";
+        }
+
+        return "실행 모드: Live mode (개발용 MIP 폴백)";
+    }
 
     private static string BuildFileFilter(IEnumerable<string> extensions)
     {
