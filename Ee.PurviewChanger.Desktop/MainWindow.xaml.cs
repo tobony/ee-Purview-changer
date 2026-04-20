@@ -178,7 +178,9 @@ public partial class MainWindow : Window
     private void RefreshAuthenticationState(AuthenticationSession session)
     {
         AuthenticationStatusTextBlock.Text = session.StatusMessage;
-        AuthenticationHintTextBlock.Text = session.Hint + Environment.NewLine + GetExecutionModeHint();
+        AuthenticationHintTextBlock.Text = string.Join(
+            Environment.NewLine,
+            new[] { session.Hint, GetExecutionModeHint() }.Where(text => !string.IsNullOrWhiteSpace(text)));
         SignOutButton.IsEnabled = session.IsSignedIn;
     }
 

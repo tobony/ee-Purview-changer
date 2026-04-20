@@ -79,7 +79,13 @@ public sealed class DevelopmentMipSdkFileLabelClient : IMipSdkFileLabelClient
             actor,
             DateTimeOffset.UtcNow);
 
-        await using (var stream = File.Create(GetMetadataPath(filePath, options)))
+        await using (var stream = new FileStream(
+                         GetMetadataPath(filePath, options),
+                         FileMode.Create,
+                         FileAccess.Write,
+                         FileShare.None,
+                         4096,
+                         useAsync: true))
         {
             await JsonSerializer.SerializeAsync(stream, metadata, JsonSerializerOptions, cancellationToken);
         }
