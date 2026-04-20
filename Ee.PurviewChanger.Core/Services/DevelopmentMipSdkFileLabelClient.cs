@@ -7,7 +7,7 @@ namespace Ee.PurviewChanger.Core.Services;
 
 public sealed class DevelopmentMipSdkFileLabelClient : IMipSdkFileLabelClient
 {
-    private const string PlaceholderPrefix = "YOUR-";
+    private const string PlaceholderValuePrefix = "YOUR-";
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web)
     {
@@ -29,7 +29,7 @@ public sealed class DevelopmentMipSdkFileLabelClient : IMipSdkFileLabelClient
         if (!options.MipSdk.DevelopmentFallbackEnabled)
         {
             if (string.IsNullOrWhiteSpace(options.MipSdk.ApplicationId) ||
-                options.MipSdk.ApplicationId.Contains(PlaceholderPrefix, StringComparison.OrdinalIgnoreCase))
+                options.MipSdk.ApplicationId.Contains(PlaceholderValuePrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return CreateUnavailableState(
                     FileInspectionStatus.MipSdkConfigurationIncomplete,
