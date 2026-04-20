@@ -7,6 +7,8 @@ namespace Ee.PurviewChanger.Core.Services;
 
 public sealed class DevelopmentMipSdkFileLabelClient : IMipSdkFileLabelClient
 {
+    private const string PlaceholderPrefix = "YOUR-";
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -27,7 +29,7 @@ public sealed class DevelopmentMipSdkFileLabelClient : IMipSdkFileLabelClient
         if (!options.MipSdk.DevelopmentFallbackEnabled)
         {
             if (string.IsNullOrWhiteSpace(options.MipSdk.ApplicationId) ||
-                options.MipSdk.ApplicationId.Contains("YOUR-", StringComparison.OrdinalIgnoreCase))
+                options.MipSdk.ApplicationId.Contains(PlaceholderPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return CreateUnavailableState(
                     FileInspectionStatus.MipSdkConfigurationIncomplete,
@@ -241,9 +243,12 @@ public sealed class DevelopmentMipSdkFileLabelClient : IMipSdkFileLabelClient
     private static string GetMetadataPath(string filePath, PurviewAppOptions options)
     {
         var targetDirectory = Path.GetFullPath(options.MipSdk.DevelopmentMetadataDirectory);
-        var fileName = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(filePath))));
+        var fileName = CreateMetadataFileNameFromPath(filePath);
         return Path.Combine(targetDirectory, $"{fileName}.json");
     }
+
+    private static string CreateMetadataFileNameFromPath(string filePath) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(filePath))));
 
     private sealed record DevelopmentMipSdkLabelMetadata(
         string FilePath,
