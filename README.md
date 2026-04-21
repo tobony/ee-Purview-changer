@@ -107,3 +107,8 @@ dotnet test /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewCh
 2. Graph/Purview REST API 기반 클라우드 파일 라벨 조회/변경 추가
 3. 실제 권한/인증 오류 분류와 재시도 정책 강화
 4. 운영 배포/서명/설치 패키지 정리
+
+## 추가 문서
+
+- 현재 기능 / 앱 구조 / 추가 개발 제안: `docs/current-state-and-roadmap.md`
+- Copilot 지속 개발 가이드: `.github/copilot-instructions.md`
