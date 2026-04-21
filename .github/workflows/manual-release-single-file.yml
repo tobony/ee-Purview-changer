@@ -1,0 +1,92 @@
+name: manual-release-single-file
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag name (example: v0.1.0)"
+        required: true
+        type: string
+      release_name:
+        description: "GitHub Release title (optional)"
+        required: false
+        type: string
+      target_commitish:
+        description: "Commit SHA or branch name used when creating the release tag"
+        required: false
+        default: main
+        type: string
+      draft:
+        description: "Create as draft release"
+        required: false
+        default: false
+        type: boolean
+      prerelease:
+        description: "Mark release as pre-release"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  publish-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve release metadata
+        id: metadata
+        shell: pwsh
+        env:
+          RELEASE_NAME_INPUT: ${{ inputs.release_name }}
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:RELEASE_NAME_INPUT)) {
+            $releaseName = "ee-purview-changer $($env:TAG_NAME)"
+          } else {
+            $releaseName = $env:RELEASE_NAME_INPUT
+          }
+
+          $zipName = "ee-purview-changer-win11-single-file-$($env:TAG_NAME).zip"
+
+          "release_name=$releaseName" >> $env:GITHUB_OUTPUT
+          "zip_name=$zipName" >> $env:GITHUB_OUTPUT
+
+      - name: Publish single-file exe
+        run: >
+          dotnet publish
+          Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableWindowsTargeting=true
+          -o "${{ github.workspace }}\publish\win-x64"
+
+      - name: Archive publish output
+        shell: pwsh
+        run: >
+          Compress-Archive
+          -Path "${{ github.workspace }}\publish\win-x64\*"
+          -DestinationPath "${{ github.workspace }}\${{ steps.metadata.outputs.zip_name }}"
+          -Force
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          target_commitish: ${{ inputs.target_commitish }}
+          name: ${{ steps.metadata.outputs.release_name }}
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
+          files: ${{ github.workspace }}\${{ steps.metadata.outputs.zip_name }}
