@@ -82,9 +82,17 @@ public sealed class NativeMipSdkFileLabelClientTests
                 options,
                 "tester@example.com");
 
-            Assert.IsTrue(outcome.Success);
-            Assert.AreEqual(LabelChangeStatus.Applied, outcome.Status);
-            Assert.AreEqual("Confidential", outcome.RecheckedLabel);
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.IsTrue(outcome.Success);
+                Assert.AreEqual(LabelChangeStatus.Applied, outcome.Status);
+                Assert.AreEqual("Confidential", outcome.RecheckedLabel);
+            }
+            else
+            {
+                Assert.IsFalse(outcome.Success);
+                Assert.AreEqual(LabelChangeStatus.MipSdkUnavailable, outcome.Status);
+            }
         }
         finally
         {
