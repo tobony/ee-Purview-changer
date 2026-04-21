@@ -101,6 +101,18 @@ dotnet build /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewC
 dotnet test /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewChanger.slnx -p:EnableWindowsTargeting=true
 ```
 
+Windows 11 단일 실행 파일 publish:
+
+```bash
+dotnet publish Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableWindowsTargeting=true
+```
+
+## GitHub Release에서 단일 실행 파일 확인
+
+- `v*` 형식 태그(예: `v0.1.0`)를 push하면 GitHub Actions `release-single-file` 워크플로우가 실행됩니다.
+- 워크플로우는 Windows 단일 파일 배포 결과를 zip(`ee-purview-changer-win11-single-file-<tag>.zip`)으로 묶어 GitHub Release 자산에 업로드합니다.
+- GitHub 저장소의 **Releases** 페이지에서 해당 zip 자산을 내려받아 확인할 수 있습니다.
+
 ## 다음 구현 단계
 
 1. `IMipSdkFileLabelClient`에 실제 Microsoft Information Protection SDK 바인딩 추가
