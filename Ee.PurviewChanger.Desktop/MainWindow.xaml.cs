@@ -34,7 +34,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            var mipClient = new DevelopmentMipSdkFileLabelClient();
+            var mipClient = MipSdkFileLabelClientFactory.Create(_options);
             _inspectionService = new MipSdkFileInspectionService(mipClient);
             _changeService = new MipSdkLabelChangeService(mipClient, auditLogService);
         }

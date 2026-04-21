@@ -44,10 +44,17 @@ Windows 11용 Microsoft Purview 라벨 변경 MVP 저장소입니다.
 현재 Live mode 구현은 두 레이어로 나뉩니다.
 
 - 공용 서비스 경계: 현재 상태 조회 / 라벨 변경 / 적용 후 재조회 / 감사 로그
-- MIP SDK 연동 지점: `IMipSdkFileLabelClient`
+- MIP SDK 연동 지점: `IMipSdkFileLabelClient` + `IMipSdkNativeBridge`
 
 기본 제공 구현은 실제 SDK 대신 `mipSdk.developmentFallbackEnabled=true` 일 때
 `App_Data/MipSdkMetadata` 에 개발용 메타데이터를 저장하여 Live mode UI/흐름을 검증합니다.
+
+`mipSdk.developmentFallbackEnabled=false` 로 설정하면 `NativeMipSdkFileLabelClient` 경로가 활성화되며,
+`mipSdk.nativeLibraryPath` 에 지정된 라이브러리에서 아래 UTF-8 JSON 내보내기 함수를 찾습니다.
+
+- `EePurviewInspectLabelUtf8`
+- `EePurviewApplyLabelUtf8`
+- `EePurviewFreeUtf8Buffer`
 
 즉, 현재 저장소는 **실제 SDK 연결을 수용하는 구조**와 **개발용 폴백 구현**을 함께 제공합니다.
 실제 Microsoft Information Protection SDK 바인딩은 이 인터페이스를 대체하는 방식으로 이어서 구현하면 됩니다.
