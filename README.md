@@ -104,7 +104,7 @@ dotnet test /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewCh
 Windows 11 단일 실행 파일 publish:
 
 ```bash
-dotnet publish /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableWindowsTargeting=true
+dotnet publish Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableWindowsTargeting=true
 ```
 
 ## GitHub Release에서 단일 실행 파일 확인
