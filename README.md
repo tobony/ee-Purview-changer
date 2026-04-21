@@ -101,7 +101,7 @@ dotnet build /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewC
 dotnet test /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewChanger.slnx -p:EnableWindowsTargeting=true
 ```
 
-Windows 11 single-file exe publish:
+Windows 11 단일 실행 파일 publish:
 
 ```bash
 dotnet publish /home/runner/work/ee-Purview-changer/ee-Purview-changer/Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableWindowsTargeting=true
