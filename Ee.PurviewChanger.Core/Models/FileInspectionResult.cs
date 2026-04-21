@@ -9,6 +9,10 @@ public sealed record FileInspectionResult(
     string CurrentLabel,
     bool CanPreviewChange,
     bool RequiresMipSdk,
+    FileInspectionStatus Status,
+    string ExecutionMode,
+    string ProviderName,
     string CurrentStateSummary,
     string CapabilitySummary,
+    string? TechnicalDetails,
     IReadOnlyList<string> Messages);

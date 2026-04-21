@@ -20,8 +20,12 @@ public sealed class LabelChangePlannerTests
             "Confidential",
             true,
             false,
+            FileInspectionStatus.ValidationModeSimulated,
+            "Validation mode",
+            "Validation mode",
             "ok",
             "ok",
+            null,
             Array.Empty<string>());
         var label = new LabelDefinition { Id = "confidential", Name = "Confidential" };
 
@@ -43,8 +47,12 @@ public sealed class LabelChangePlannerTests
             "General",
             true,
             false,
+            FileInspectionStatus.ValidationModeSimulated,
+            "Validation mode",
+            "Validation mode",
             "ok",
             "ok",
+            null,
             Array.Empty<string>());
         var label = new LabelDefinition { Id = "confidential", Name = "Confidential" };
 
