@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Text.Json;
 using Ee.PurviewChanger.Core.Models;
 
@@ -134,22 +135,32 @@ public sealed class NativeLibraryMipSdkNativeBridge(string nativeLibraryPath)
         return success ? LabelChangeStatus.Applied : LabelChangeStatus.Blocked;
     }
 
+    /// <summary>
+    /// Native entry point that accepts a UTF-8 JSON request payload and returns a UTF-8 JSON response buffer.
+    /// Returned buffers must be released with <see cref="FreeUtf8BufferFunction"/>.
+    /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate IntPtr Utf8JsonFunction([MarshalAs(UnmanagedType.LPUTF8Str)] string requestJson);
 
+    /// <summary>
+    /// Native buffer release callback for UTF-8 JSON pointers returned by <see cref="Utf8JsonFunction"/>.
+    /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void FreeUtf8BufferFunction(IntPtr buffer);
 
     private sealed class LoadedNativeLibrary(IntPtr handle)
         : IDisposable
     {
-        public IntPtr Handle { get; } = handle;
+        private IntPtr _handle = handle;
+        public IntPtr Handle => _handle;
 
         public void Dispose()
         {
-            if (Handle != IntPtr.Zero)
+            var handle = Interlocked.Exchange(ref _handle, IntPtr.Zero);
+
+            if (handle != IntPtr.Zero)
             {
-                NativeLibrary.Free(Handle);
+                NativeLibrary.Free(handle);
             }
         }
     }

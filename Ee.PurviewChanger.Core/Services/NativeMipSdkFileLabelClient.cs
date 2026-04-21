@@ -53,7 +53,7 @@ public sealed class NativeMipSdkFileLabelClient : IMipSdkFileLabelClient
         }
         catch (Exception exception)
         {
-            var status = IsRuntimeBindingException(exception)
+            var status = IsNativeLibraryLoadException(exception)
                 ? FileInspectionStatus.MipSdkUnavailable
                 : FileInspectionStatus.InspectionFailed;
 
@@ -134,7 +134,7 @@ public sealed class NativeMipSdkFileLabelClient : IMipSdkFileLabelClient
         {
             return new MipSdkLabelChangeOutcome(
                 false,
-                IsRuntimeBindingException(exception)
+                IsNativeLibraryLoadException(exception)
                     ? LabelChangeStatus.MipSdkUnavailable
                     : LabelChangeStatus.Blocked,
                 false,
@@ -208,6 +208,6 @@ public sealed class NativeMipSdkFileLabelClient : IMipSdkFileLabelClient
             _ => LabelChangeStatus.Blocked
         };
 
-    private static bool IsRuntimeBindingException(Exception exception) =>
+    private static bool IsNativeLibraryLoadException(Exception exception) =>
         exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException;
 }
