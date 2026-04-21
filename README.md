@@ -113,6 +113,18 @@ dotnet publish Ee.PurviewChanger.Desktop/Ee.PurviewChanger.Desktop.csproj -c Rel
 - 워크플로우는 Windows 단일 파일 배포 결과를 zip(`ee-purview-changer-win11-single-file-<tag>.zip`)으로 묶어 GitHub Release 자산에 업로드합니다.
 - GitHub 저장소의 **Releases** 페이지에서 해당 zip 자산을 내려받아 확인할 수 있습니다.
 
+## 수동 publish + release 실행
+
+- Actions 탭에서 `manual-release-single-file` 워크플로우를 수동 실행할 수 있습니다.
+- 필수 입력값:
+  - `tag_name`: 릴리즈 태그 이름(예: `v0.1.0`)
+- 선택 입력값:
+  - `release_name`: 릴리즈 제목(비우면 `ee-purview-changer <tag_name>` 사용)
+  - `target_commitish`: 태그 생성 기준 커밋/브랜치(기본값: `main`)
+  - `draft`: 드래프트 릴리즈 여부
+  - `prerelease`: 프리릴리즈 여부
+- 실행 시 단일 파일 publish 결과를 zip으로 생성하고 해당 태그 릴리즈 자산으로 업로드합니다.
+
 ## 다음 구현 단계
 
 1. `IMipSdkFileLabelClient`에 실제 Microsoft Information Protection SDK 바인딩 추가
