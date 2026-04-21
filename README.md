@@ -82,7 +82,7 @@ Live mode 설정:
 Live mode 차단/실패 처리:
 
 - `mipSdk.enabled=false` 이면 현재 상태 확인 단계에서 Live mode 비활성화 상태로 차단됩니다.
-- `developmentFallbackEnabled=false` 인 경우 `applicationId`, `nativeLibraryPath`, Windows 실행 환경을 점검해
+- `developmentFallbackEnabled=false` 인 경우 `applicationId`, `nativeLibraryPath`, Windows 실행 환경을 점검합니다.
   설정 누락과 실행 환경 미준비를 구분해 보여줍니다.
 - 동일 라벨 재적용은 적용 전에 차단되며, 우회 호출이 들어와도 서비스가 다시 막습니다.
 - 적용 후 재조회가 실패하거나 결과가 다르면 실패 상태와 감사 로그를 함께 남깁니다.

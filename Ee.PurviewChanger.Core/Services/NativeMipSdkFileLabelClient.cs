@@ -2,10 +2,22 @@ using Ee.PurviewChanger.Core.Models;
 
 namespace Ee.PurviewChanger.Core.Services;
 
-public sealed class NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge)
-    : IMipSdkFileLabelClient
+public sealed class NativeMipSdkFileLabelClient : IMipSdkFileLabelClient
 {
     private const string PlaceholderValuePrefix = "YOUR-";
+    private readonly IMipSdkNativeBridge _nativeBridge;
+    private readonly Func<bool> _isWindowsChecker;
+
+    public NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge)
+        : this(nativeBridge, OperatingSystem.IsWindows)
+    {
+    }
+
+    public NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge, Func<bool> isWindowsChecker)
+    {
+        _nativeBridge = nativeBridge;
+        _isWindowsChecker = isWindowsChecker;
+    }
 
     public MipSdkFileLabelState Inspect(string filePath, PurviewAppOptions options, string actor)
     {
@@ -13,7 +25,7 @@ public sealed class NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
 
-        var guard = ValidateLiveMode(options);
+        var guard = ValidateLiveMode(options, _isWindowsChecker);
 
         if (guard is not null)
         {
@@ -22,7 +34,7 @@ public sealed class NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge
 
         try
         {
-            var response = nativeBridge.Inspect(new NativeMipSdkInspectRequest(
+            var response = _nativeBridge.Inspect(new NativeMipSdkInspectRequest(
                 Path.GetFullPath(filePath),
                 options.MipSdk.ApplicationId,
                 actor));
@@ -100,7 +112,7 @@ public sealed class NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge
 
         try
         {
-            var response = await nativeBridge.ApplyAsync(
+            var response = await _nativeBridge.ApplyAsync(
                 new NativeMipSdkApplyRequest(
                     Path.GetFullPath(filePath),
                     currentLabel,
@@ -133,7 +145,7 @@ public sealed class NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge
         }
     }
 
-    private static MipSdkFileLabelState? ValidateLiveMode(PurviewAppOptions options)
+    private static MipSdkFileLabelState? ValidateLiveMode(PurviewAppOptions options, Func<bool> isWindowsChecker)
     {
         if (!options.MipSdk.Enabled)
         {
@@ -157,7 +169,7 @@ public sealed class NativeMipSdkFileLabelClient(IMipSdkNativeBridge nativeBridge
                 "mipSdk.nativeLibraryPath 값을 설정해야 실제 MIP SDK 런타임을 확인할 수 있습니다.");
         }
 
-        if (!OperatingSystem.IsWindows())
+        if (!isWindowsChecker())
         {
             return CreateUnavailableState(
                 FileInspectionStatus.MipSdkUnavailable,

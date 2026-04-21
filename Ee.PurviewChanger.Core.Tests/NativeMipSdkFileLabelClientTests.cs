@@ -53,25 +53,27 @@ public sealed class NativeMipSdkFileLabelClientTests
                 NativeLibraryPath = filePath
             }
         };
-        var client = new NativeMipSdkFileLabelClient(new StubNativeBridge(
-            inspectResponse: new NativeMipSdkInspectResponse(
-                true,
-                true,
-                true,
-                "General",
-                "stub native",
-                "ready",
-                "ready",
-                null,
-                Array.Empty<string>()),
-            applyResponse: new NativeMipSdkApplyResponse(
-                true,
-                LabelChangeStatus.Applied,
-                true,
-                "stub native",
-                "applied",
-                "Confidential",
-                null)));
+        var client = new NativeMipSdkFileLabelClient(
+            new StubNativeBridge(
+                inspectResponse: new NativeMipSdkInspectResponse(
+                    true,
+                    true,
+                    true,
+                    "General",
+                    "stub native",
+                    "ready",
+                    "ready",
+                    null,
+                    Array.Empty<string>()),
+                applyResponse: new NativeMipSdkApplyResponse(
+                    true,
+                    LabelChangeStatus.Applied,
+                    true,
+                    "stub native",
+                    "applied",
+                    "Confidential",
+                    null)),
+            () => true);
 
         try
         {
@@ -82,17 +84,9 @@ public sealed class NativeMipSdkFileLabelClientTests
                 options,
                 "tester@example.com");
 
-            if (OperatingSystem.IsWindows())
-            {
-                Assert.IsTrue(outcome.Success);
-                Assert.AreEqual(LabelChangeStatus.Applied, outcome.Status);
-                Assert.AreEqual("Confidential", outcome.RecheckedLabel);
-            }
-            else
-            {
-                Assert.IsFalse(outcome.Success);
-                Assert.AreEqual(LabelChangeStatus.MipSdkUnavailable, outcome.Status);
-            }
+            Assert.IsTrue(outcome.Success);
+            Assert.AreEqual(LabelChangeStatus.Applied, outcome.Status);
+            Assert.AreEqual("Confidential", outcome.RecheckedLabel);
         }
         finally
         {

@@ -74,11 +74,7 @@ public sealed class NativeLibraryMipSdkNativeBridge(string nativeLibraryPath)
             var response = JsonSerializer.Deserialize<NativeApplyBridgeResponse>(rawJson, JsonSerializerOptions)
                 ?? throw new InvalidOperationException("MIP SDK apply 응답을 역직렬화하지 못했습니다.");
 
-            var status = Enum.TryParse<LabelChangeStatus>(response.Status, ignoreCase: true, out var parsedStatus)
-                ? parsedStatus
-                : response.Success
-                    ? LabelChangeStatus.Applied
-                    : LabelChangeStatus.Blocked;
+            var status = ResolveLabelChangeStatus(response.Status, response.Success);
 
             return Task.FromResult(new NativeMipSdkApplyResponse(
                 response.Success,
@@ -126,6 +122,16 @@ public sealed class NativeLibraryMipSdkNativeBridge(string nativeLibraryPath)
         }
 
         return Marshal.GetDelegateForFunctionPointer<FreeUtf8BufferFunction>(functionPointer);
+    }
+
+    private static LabelChangeStatus ResolveLabelChangeStatus(string? statusText, bool success)
+    {
+        if (Enum.TryParse<LabelChangeStatus>(statusText, ignoreCase: true, out var parsedStatus))
+        {
+            return parsedStatus;
+        }
+
+        return success ? LabelChangeStatus.Applied : LabelChangeStatus.Blocked;
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
